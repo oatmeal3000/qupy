@@ -1,0 +1,152 @@
+{% extends "base.html" %}
+
+<!--  -->
+{% block content %}
+<div class="row">
+	<div class="col-lg-3">
+		<div class="hpanel stats">
+			<div class="panel-body h-200">
+				<div class="stats-title pull-left">
+					<h3>小车温度</h3>
+				</div>
+				<div class="stats-icon pull-right">
+					<i class="pe-7s-graph2 fa-4x"></i>
+				</div>
+				<div class="m-t-xl">
+					<h1 id="display_temp" class="text-success">{{temp}}℃</h1>
+					<span class="font-bold no-margins"> 获取温度: </span> <br /> <small>
+						vcgencmd measure_temp命令可以报告树莓派的BCM2835片上系统的温度。也可以从sys文件系统读取。 </small>
+				</div>
+			</div>
+			<div class="panel-footer">This is standard panel footer</div>
+		</div>
+	</div>
+	<div class="col-lg-6">
+		<div class="hpanel stats">
+			<div class="panel-body h-200">
+				<div class="text-center small">温度变化曲线</div>
+				<div class="flot-chart" style="height: 160px">
+					<div class="flot-chart-content" id="flot-line-chart"></div>
+				</div>
+			</div>
+			<div class="panel-footer">X轴:时间, Y轴:温度。</div>
+		</div>
+	</div>
+	<div class="col-lg-3">
+		<div class="hpanel stats">
+			<div class="panel-body h-200">
+				<div class="stats-title pull-left">
+					<h4>温度比例图</h4>
+				</div>
+				<div class="stats-icon pull-right">
+					<i class="pe-7s-shuffle fa-4x"></i>
+				</div>
+				<div class="clearfix"></div>
+				<div class="flot-chart">
+					<div class="flot-chart-content" id="flot-pie-chart"
+						style="height: 112px"></div>
+				</div>
+			</div>
+			<div class="panel-footer">This is standard panel footer</div>
+		</div>
+	</div>
+</div>
+{% endblock content %}
+
+<!--  -->
+{% block script %}
+<script>
+	$(function() {
+		tempData = {
+			index : 0,
+			data : [],
+			options : {
+				series : {
+					splines : {
+						show : true,
+						tension : 0.4,
+						lineWidth : 1,
+						fill : 0.3
+					},
+				},
+				grid : {
+					tickColor : "#f0f0f0",
+					borderWidth : 1,
+					borderColor : 'f0f0f0',
+					color : '#6a6c6f'
+				},
+				colors : [ "#62cb31", "#efefef" ],
+			}
+		};
+
+		var request = new XMLHttpRequest();
+		request.open('GET', '?update=1');
+		request.onreadystatechange = function() {
+			if (request.readyState === 4 && request.status === 200) {
+				temp = Number(request.responseText);
+				for (tempData.index = 0; tempData.index < 8; tempData.index++) {
+					tempData.data.push([ tempData.index, temp ]);
+				}
+			}
+			$.plot($("#flot-line-chart"), [ tempData.data ], tempData.options);
+		};
+		request.send();
+		
+	    /**
+         * Pie Chart Data
+         */
+        var pieChartData = [
+            { label: "20 - 30℃", data: 16, color: "#62cb31", },
+            { label: "30 - 40℃", data: 6, color: "#A4E585", },
+            { label: "40 - 50℃", data: 22, color: "#368410", },
+            { label: "50 - 60℃", data: 32, color: "#8DE563", }
+        ];
+
+        /**
+         * Pie Chart Options
+         */
+        var pieChartOptions = {
+            series: {
+                pie: {
+                    show: true
+                }
+            },
+            grid: {
+                hoverable: true
+            },
+            tooltip: true,
+            tooltipOpts: {
+                content: "%p.0%, %s", // show percentages, rounding to 2 decimal places
+                shifts: {
+                    x: 20,
+                    y: 0
+                },
+                defaultTheme: false
+            }
+        };
+
+        $.plot($("#flot-pie-chart"), pieChartData, pieChartOptions);
+	});
+
+	function updateTemp() {
+		var request = new XMLHttpRequest();
+		request.open('GET', '?update=1');
+		request.onreadystatechange = function() {
+			if (request.readyState === 4 && request.status === 200) {
+				e = document.getElementById('display_temp');
+				e.innerHTML = request.responseText + "℃"
+
+				tempData.data.shift();
+				tempData.data.push([ tempData.index++,
+						Number(request.responseText) ]);
+				$.plot($("#flot-line-chart"), [ tempData.data ],
+						tempData.options);
+			}
+		};
+		request.send();
+		setTimeout(updateTemp, 1000);
+	}
+
+	updateTemp();
+</script>
+{% endblock script %}

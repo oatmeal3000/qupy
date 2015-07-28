@@ -1,0 +1,33 @@
+{% extends "base.html" %}
+
+{% block content %}
+<div class="row">
+           <div class="table-responsive">
+                <table cellpadding="1" cellspacing="1" class="table table-condensed table-striped">
+                    <tbody>
+                    <tr><td></td><td><img src="/static/images/forward.png" width="72px" onclick="driveCommand('up')"/></td><td></td><td><img src="/static/images/gearup.png" width="72px"  onclick="driveCommand('gear+')"/></td></tr> 
+                    <tr><td><img src="/static/images/left.png" width="72px"  onclick="driveCommand('left')"/></td><td><img src="/static/images/stop.png" width="72px"  onclick="driveCommand('stop')"/></td><td><img src="/static/images/right.png" width="72px"  onclick="driveCommand('right')"/></td><td><center><font size="10" color="orange"><span id="speed">0</span><font></center></td></tr> 
+                    <tr><td></td><td><img src="/static/images/back.png" width="72px" onclick="driveCommand('down')"/></td><td></td><td><img src="/static/images/geardown.png" width="72px" onclick="driveCommand('gear-')"/></td></tr> 
+                    </tbody>
+                </table>
+       
+          </div>
+	
+</div>
+{% endblock content %}
+
+
+{% block script %}
+<script>
+function driveCommand(cmd){  
+    jQuery.post('/demo/drive_car',{  
+        command: cmd
+    },function(dat){  
+        var labelSpeed = $("#speed");
+        var result = dat['speed'];
+        labelSpeed.html(result); 
+    });  
+} 
+</script>
+{% endblock script %}
+

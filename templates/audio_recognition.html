@@ -1,0 +1,150 @@
+{% extends "base.html" %}
+
+<!--  -->
+{% block content %}
+<div class="row">
+	<div class="col-lg-3">
+		<div class="hpanel stats">
+			<div class="panel-body h-200">
+				<div class="stats-title pull-left">
+					<h3>语音识别</h3>
+				</div>
+				<div class="stats-icon pull-right">
+					<i class="pe-7s-volume1 fa-4x"></i>
+				</div>
+				<div class="m-t-xl">
+					<h1 id="display_text" class="text-success">ABC</h1>
+					<span class="font-bold no-margins"> 识别过程: </span> <br /> <small>
+						通过浏览器Javascript录音，将音频数据发送至后台进行语音识别处理。返回结果显示在页面上。</small>
+				</div>
+			</div>
+			<div class="panel-footer">This is standard panel footer</div>
+		</div>
+	</div>
+	<div class="col-lg-3">
+       			<div class="hpanel">
+                    <div class="panel-body text-center h-200">
+                    	<p>
+                        	<i class="pe-7s-micro fa-4x"></i>
+                        </p>
+                        <p>
+							<button id="record_send_btn" class="btn btn-danger" type="button"><i class="fa fa-microphone" ></i><span class="bold">录制命令</span></button>
+						</p>
+                        <h4 class="m-xs"><span id="show" >等待录音...</span><img id="recording_img" src="/static/images/loading-bars.svg"></h4>
+                    </div>
+                    <div class="panel-footer">
+                        This is standard panel footer
+                    </div>
+                </div>
+	</div>
+</div>
+{% endblock content %}
+
+<!--  -->
+{% block script %}
+<script src="/static/js/recorder_js/recorder.js"></script>
+<script>
+var navigator = window.navigator;
+var Context = window.AudioContext || window.webkitAudioContext;
+var context = new Context();
+
+// audio
+var mediaStream;
+var rec;
+
+navigator.getUserMedia = (
+  navigator.getUserMedia ||
+    navigator.webkitGetUserMedia ||
+    navigator.mozGetUserMedia ||
+    navigator.msGetUserMedia
+);
+
+function showResult(res) {
+	var e = $("#show");
+
+	if (res === '' && !e.hasClass("text-danger")) {
+		e.removeClass();
+		e.addClass("text-danger");
+		res = "无法识别"
+	} else if (!e.hasClass("text-info")) {
+		e.removeClass();
+		e.addClass("text-info");
+	}
+
+	e.text(res);
+}
+
+function switchState(state, data) {
+	if (state === 'recording') {
+		$("#recording_img").show();
+  		var e = $("#show");
+  		e.removeClass();
+  		e.text("正在录音...");
+
+  		var btn = $("#record_send_btn");
+  		btn.removeClass();
+  		btn.addClass("btn btn-success");
+  		btn.html('<i class="fa fa-upload"></i><span class="bold">上传识别</span>');
+  		btn.unbind('click');
+  		btn.bind('click', function() { stop(); });
+	} else if (state === 'sending') {
+		$("#recording_img").hide();
+
+  		var e = $("#show");
+  		e.removeClass();
+  		e.text("等待识别...");
+	} else if (state === 'complete') {
+  		var btn = $("#record_send_btn");
+  		btn.removeClass();
+  		btn.addClass("btn btn-danger");
+  		btn.html('<i class="fa fa-microphone"></i><span class="bold">录制命令</span>');
+  		btn.unbind('click');
+  		btn.bind('click', function() { record(); });
+	}
+}
+
+function record() {
+  if (rec == undefined) {
+  	navigator.getUserMedia({audio: true}, function(localMediaStream){
+      mediaStream = localMediaStream;
+      mediaStreamSource = context.createMediaStreamSource(localMediaStream);
+      rec = new Recorder(mediaStreamSource, {
+        workerPath: '/static/js/recorder_js/recorderWorker.js',
+		outputSampleRate: 8000,
+      });
+      rec.record();
+	  switchState('recording')
+     }, function(err){
+      console.log('Not supported');
+     });
+  } else {
+  	rec.clear();
+  	rec.record();
+  	switchState('recording')
+  }
+
+}
+
+function stop() {
+  //mediaStream.stop();
+  rec.stop();
+  switchState("sending");
+  
+  rec.exportWAV(function(e){
+    //rec.clear();
+    //Recorder.forceDownload(e, "test.wav");
+	Recorder.sendToServer(e, "/demo/audio", function(html) {
+		showResult(html);
+		switchState("complete");
+	});
+  });
+}
+
+$(function() {
+	$("#record_send_btn").bind('click', function() {
+		record();
+	});
+  	$("#recording_img").hide();
+});
+</script>
+{% endblock script %}

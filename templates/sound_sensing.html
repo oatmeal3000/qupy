@@ -1,0 +1,98 @@
+{% extends "base.html" %}
+
+<!--  -->
+{% block content %}
+<div class="row">
+	<div class="col-lg-3">
+		<div class="hpanel stats">
+			<div class="panel-body h-200">
+				<div class="stats-title pull-left">
+					<h3>声音感应</h3>
+				</div>
+				<div class="stats-icon pull-right">
+					<i class="pe-7s-speaker fa-4x"></i>
+				</div>
+
+				<div class="m-t-xl">
+					<div class="row">
+						<h1 align="center" id="display_result" class="text-success"></h1>
+					</div>
+					<span class="font-bold no-margins"> 原理说明: </span><br/><small>
+					声音模块对环境声音强度最敏感，一般用来检测周围环境的声音强度，传感器通过震动感应声响，所以只能识别声音的有无，不能识别声音的大小或者特定频率的声音。</small>
+				</div>
+			</div>
+			<div class="panel-footer">检测到声音时OUT输出低电平</div>
+		</div>
+	</div>
+	<div class="col-lg-3">
+		<div class="hpanel blog-box">
+			<div class="panel-heading">
+				<div class="media clearfix">
+					<a class="pull-left"> <img src="/static/images/sound-sensor.jpg"
+						alt="profile-picture">
+					</a>
+					<div class="media-body">
+						<small><span class="font-bold">声音传感模块</span>
+						</small> <br> <small class="text-muted">在淘宝可以买到</small>
+					</div>
+				</div>
+			</div>
+			<div class="panel-image">
+				<img class="img-responsive" src="/static/images/sound-sensor.jpg" alt="">
+				<div class="title">
+					<h4>声音传感模块</h4>
+				</div>
+			</div>
+		</div>
+	</div>
+
+	<div class="col-lg-6">
+		<div class="hpanel blog-box">
+			<div class="panel-body">
+				<h4 class="text-info">模块使用：</h4>
+				<p>
+					(1)可以检测周围环境的声音和声音强度<br/> 
+					(2)灵敏度可调（图中蓝色数字电位器调节）<br/>
+					(3)工作电压3.3V-5V<br/>
+					(4)数字开关量输出（0和1）<br/>
+				</p>
+				<h4 class="text-info">引脚连接：</h4>
+				<pre>
+            	  Pi          声感模块
+            	GPIO(x) ------- OUT
+            	DC 5V   ------- VCC
+            	DC GND  ------- GND</pre>
+			</div>
+		</div>
+	</div>
+</div>
+
+<div class="row">
+	<div class="col-lg-12">
+		<div class="hpanel blog-box">
+			<div class="panel-body">
+			<h4 class="text-info">声音传感示意图：</h4>
+			<div class="panel-image">
+				<img class="img-responsive" src="/static/images/sound_sensing_digram.jpg"/>
+			</div>
+			</div>
+		</div>
+	</div>
+</div>
+{% endblock content %}
+
+<!--  -->
+{% block script %}
+<script>
+	function updateDistance() {
+		$.getJSON("", "update=1", function(json) {
+			var res = json['result'];
+			var e = $("#display_result");
+			e.text(res);
+			setTimeout(updateDistance, 500);
+		});
+	};
+
+	updateDistance();
+</script>
+{% endblock script %}

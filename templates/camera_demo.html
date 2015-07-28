@@ -1,0 +1,16 @@
+<html>
+	<body>
+		<p>把摄像头采集数据以rtsp流传输，使用Firefox浏览器</p>
+		<object classid="clsid:9BE31822-FDAD-461B-AD51-BE1D1C159921" 
+			codebase="http://download.videolan.org/pub/videolan/vlc/last/win32/axvlc.cab" id="vlc">
+    		<embed type="application/x-vlc-plugin" pluginspage="http://www.videolan.org" 
+					name="vlc" src="rtsp://127.0.0.1:8554/1" width="640" height="400">
+       			<param name='volume' value='50' />
+       			<param name='autoplay' value='true' />
+         	  	<param name='loop' value='false' />
+         		<param name='fullscreen' value='false' />
+         		<param name='controls' value='false' />
+    		</embed>
+    	</object>
+	</body>
+</html>

@@ -1,0 +1,72 @@
+{% extends "base.html" %}
+
+{% block content %}
+<div class="row">
+           <div class="table-responsive">
+                <table cellpadding="1" cellspacing="1" class="table table-condensed table-striped">
+                    <thead>
+                    <tr>
+                        <th>Mode</th>
+                        <th>Physical</th>
+                        <th>Physical</th>
+                        <th>Mode</th>   
+                    </tr>
+                    </thead>
+                    <tbody>
+                    {{ pinMatrix | safe }}
+                    </tbody>
+                </table>
+       
+          </div>
+	
+</div>
+{% endblock content %}
+
+
+{% block script %}
+<script>
+function reverseDirection(  pinNum ){  
+    jQuery.post('/demo/gpio',{  
+        num:pinNum,
+        command:'direction'
+    },function(dat){  
+        var labelDirection = $("#direction" + pinNum);
+        labelDirection.html( dat['result']);
+    });  
+} 
+
+function toggleValue( pinNum ){
+        var direction = $("#direction" + pinNum).text();
+        if (direction === 'OUT'){
+            var labelVoltage = $("#voltage" + pinNum);
+            jQuery.post('/demo/gpio',{  
+                 num:pinNum,
+                 command:'value'
+            },function(dat){  
+                     labelVoltage.html('(' + dat['result'] + ')');
+            }); 
+        }
+}
+
+$(function(){
+   function getInput(){
+            jQuery.post('/demo/gpio',{  
+                 num:0,
+                 command:'input'
+            },function(dat){  
+                     input_values = dat['result'];
+                     for(var pin = 1; pin < 28; pin++){
+                         var direction = $("#direction" + pin).text();
+                         var label_voltage = $("#voltage" + pin);
+                         if('IN' == direction){
+                             label_voltage.html('(' + input_values[pin] + ')'); 
+                         }
+                     }
+            }); 
+    }
+    setInterval(getInput,3000);
+});
+
+</script>
+{% endblock script %}
+
